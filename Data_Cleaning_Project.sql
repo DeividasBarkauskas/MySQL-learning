@@ -7,7 +7,7 @@ SELECT * FROM layoffs;
 -- 3. Null Values or blank values
 -- 4. Remove Any Columns
 
--- Sukuriama lentelė, kuri yra tokia pati kaip originali 'layoffs' lentelė
+-- Sukuriama lentelės 'layoffs' kopija
 CREATE TABLE layoffs_staging
 LIKE layoffs;
 
@@ -20,13 +20,13 @@ FROM layoffs;
 
 SELECT * FROM layoffs_staging;
 
--- Pridedama eilės numeracija kiekvienam įrašui, kad būtų galima identifikuoti pasikartojančius įrašus
+-- Sukuriamas naujas stulpelis kuris sunumeruos visus įrašus, taip bus galima identifikuoti dublikatus
 SELECT *, 
 ROW_NUMBER() OVER(
 PARTITION BY company, location, industry, total_laid_off, percentage_laid_off, `date`, stage, country, funds_raised_millions) AS row_num
 FROM layoffs_staging;
 
--- Sukuriama CTE (Common Table Expression) struktūra pasikartojantiems įrašams identifikuoti
+-- Sukuriamas CTE (Common Table Expression), dublikatams identifikuoti
 WITH dublicate_cte AS (
 SELECT *, 
 ROW_NUMBER() OVER(
@@ -58,13 +58,13 @@ ROW_NUMBER() OVER(
 PARTITION BY company, location, industry, total_laid_off, percentage_laid_off, `date`, stage, country, funds_raised_millions) AS row_num
 FROM layoffs_staging;
 
--- Ištrinami visi pasikartojantys įrašai 'layoffs_staging2' lentelėje
+-- Ištrinami visi dublikatai 'layoffs_staging2' lentelėje
 DELETE FROM layoffs_staging2
 WHERE row_num > 1;
 
 SELECT * FROM layoffs_staging2;
 
--- Data standardize
+-- DATA STANDARDIZE
 
 -- Pašalinami nereikalingi tarpai iš 'company' stulpelio reikšmių
 SELECT TRIM(company) new
@@ -151,10 +151,10 @@ FROM layoffs_staging2
 WHERE total_laid_off IS NULL 
 AND percentage_laid_off IS NULL;
 
--- Parodomi visi įrašai iš 'layoffs_staging2' lentelės
-SELECT * 
-FROM layoffs_staging2;
-
 -- Pašalinamas 'row_num' stulpelis iš 'layoffs_staging2' lentelės, nes jis nebereikalingas
 ALTER TABLE layoffs_staging2
 DROP COLUMN row_num;
+
+-- Parodomi visi įrašai iš 'layoffs_staging2' lentelės
+SELECT * 
+FROM layoffs_staging2;
