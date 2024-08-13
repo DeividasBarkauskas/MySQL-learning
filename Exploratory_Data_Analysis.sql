@@ -100,7 +100,7 @@ WITH Company_Year (company, years, total_laid_off) AS
 ), Company_Year_Rank AS
 (
     -- Iš CTE "Company_Year" sukurime kitą laikinas lentelę, kurioje apskaičiuojame įmonių reitingą.
-    -- Naudojame "dense_rank()" analitinę funkciją, kad suteiktume įmonėms reitingą pagal bendrą "total_laid_off" kiekį.
+    -- Naudojame "dense_rank()" funkciją, kad suteiktume įmonėms reitingą pagal bendrą "total_laid_off" kiekį.
     SELECT 
         *, DENSE_RANK() OVER(PARTITION BY years ORDER BY total_laid_off DESC) AS Ranking  -- Apskaičiuojame reitingą pagal "total_laid_off" kiekį, didėjimo tvarka.
     FROM Company_Year
